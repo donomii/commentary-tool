@@ -1,9 +1,6 @@
 #lang scheme/gui
-; Make a frame by instantiating the frame% class
 
-;Notes:
-;get-editor in snip-admin% needs to be renamed get-parent-editor
-;chain-to-keymap description is back to front
+
 (require framework/test)
 (require mred
          mzlib/class
@@ -19,8 +16,6 @@
          json
          )
 [require anaphoric]
-[require suffixtree]
-(require pfds/trie)
 [require [prefix-in http- net/http-easy]]
 (require "old.rkt" "spath.rkt")
 (require "editboxsupport.rkt")
@@ -150,9 +145,12 @@ You will see different options depending on whether you put the cursor on a word
 
 [new button% [label "Refresh"] [parent source-buttons-panel]
      [callback [lambda [a b]
+                 [send commentary-text erase]
+                 [send commentary-text insert "Updating indexes, please wait..."]
                  [debug "Gotags command: ~a\n" [append (list "./gotags" "-R" "-f" "tags") [string-split [send source-dirs-text get-text] "\n"]]]
                  [debug "~a\n" (apply system* [append (list "./gotags" "-R" "-f" "tags") [string-split [send source-dirs-text get-text] "\n"]])]
                  [map  [lambda [x] [cindex-directory x] ]  [string-split [send source-dirs-text get-text] "\n"]]
+                 [send commentary-text insert "Complete!"]
                  ]]]
 
 [define max-results-field [new text-field% [label "Max Results"] [parent settings-panel] [init-value [get-tvar-fail "max-results" [lambda [] "50"]]] ]]
@@ -404,14 +402,19 @@ You will see different options depending on whether you put the cursor on a word
 [define [cindex-directory a-dir]
   [let [[cmd [format "./cindex \"~a\"" a-dir]]]
     [displayln cmd]
-    [shell-out cmd [lambda [ stdout-pipe stdin-pipe proc-id stderr-pipe control-proc] 
+    [shell-out cmd [lambda [ stdout-pipe stdin-pipe proc-id stderr-pipe control-proc]
+[send commentary-text insert "\n"]
+                     [send commentary-text insert cmd]
+                     #t
 
-                     [send commentary-text erase]
+                     
+
+                     ;[send commentary-text erase]
                                                                
                                                                     
-                     [send commentary-text insert [format "~a" 
+                     ;[send commentary-text insert [format "~a" 
 
-                                                          [handler-capture-output stdout-pipe stdin-pipe proc-id stderr-pipe control-proc]]]
+                      ;                                    [handler-capture-output stdout-pipe stdin-pipe proc-id stderr-pipe control-proc]]]
                      ]]]]
 
 

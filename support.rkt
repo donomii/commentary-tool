@@ -80,7 +80,10 @@
     [displayln "---"]
     (newline))]
 
-[define ctg [list->vector [file->lines "tags"]]]
+[define ctg (with-handlers ([[lambda args #t] 
+                   (λ (e) [vector])])
+
+                                                          [list->vector [file->lines "tags"]])]
 
 ;Binary search on a sorted vector
 
@@ -131,16 +134,15 @@
       [string-prefix? a search-term ]]]]
 
 [define [binary-search-all-matches a-vec search-term]
+  [if [vector-empty? a-vec]
+      a-vec
   [letrec [
            [pos [binary-search a-vec search-term]]
            [start [find-start a-vec [make-cmp search-term] pos]]
            [end [find-end a-vec [make-cmp search-term] pos]]]
     [if [> start end]
         [vector] ; Empty vector
-        (vector-copy a-vec start end)]
-    
-    ]
-  ]
+        (vector-copy a-vec start end)]]]]
 
 
 
