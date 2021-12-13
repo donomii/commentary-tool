@@ -9,3 +9,6 @@ go build -v  github.com/google/codesearch/cmd/csearch
 
 go get -u github.com/jstemmer/gotags
 go build github.com/jstemmer/gotags
+
+/Applications/Racket\ v8.3/bin/raco pkg install anaphoric
+/Applications/Racket\ v8.3/bin/raco pkg install --deps search-auto http-easy
