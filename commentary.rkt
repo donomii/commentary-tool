@@ -56,12 +56,18 @@
 [define welcome-text 
   "Welcome to Commentary.
 
-Commentary is a pluggable framework to combine the output of multiple search tools
+Commentary is a framework to combine the output of multiple search tools
 and plugins in a convenient way.
 
-You can type text on the left here, and the plugins will add their commentary on the right.
+You can type text on the left here, and the modules will add their commentary on the right.
 
 You will see different options depending on whether you put the cursor on a word or if you select some text.
+
+
+
+
+
+To start, add some source directories, then click 'Refresh'.
 
 
 "]
@@ -79,6 +85,9 @@ You will see different options depending on whether you put the cursor on a word
 
 ;Is there a user-highlighted section in a-text?
 [define [highlight-active? a-text]
+  
+  
+                     
   [letrec [
            [highlight-start [send a-text get-start-position]]
            [hightlight-end [send a-text get-end-position]]]
@@ -150,14 +159,15 @@ You will see different options depending on whether you put the cursor on a word
                  [debug "Gotags command: ~a\n" [append (list "./gotags" "-R" "-f" "tags") [string-split [send source-dirs-text get-text] "\n"]]]
                  [debug "~a\n" (apply system* [append (list "./gotags" "-R" "-f" "tags") [string-split [send source-dirs-text get-text] "\n"]])]
                  [map  [lambda [x] [cindex-directory x] ]  [string-split [send source-dirs-text get-text] "\n"]]
-                 [send commentary-text insert "Complete!"]
+                 [send commentary-text insert "\nComplete!"]
                  ]]]
 
 [define max-results-field [new text-field% [label "Max Results"] [parent settings-panel] [init-value [get-tvar-fail "max-results" [lambda [] "50"]]] ]]
 [define [get-max-results] [string->number [send max-results-field get-value]]]
 [define wiktionary-api-field [new text-field% [label "wiktionary api"] [parent settings-panel]
-                                  [init-value
-                                   [get-tvar-fail "wiktionary-api" [lambda [] "https://en.wiktionary.org/w/api.php?action=parse&page=~a&prop=wikitext&formatversion=2&format=json"] ]]]]
+                                  ]]
+
+[send wiktionary-api-field set-value [get-tvar-fail "wiktionary-api" [lambda [] "https://en.wiktionary.org/w/api.php?action=parse&page=~a&prop=wikitext&formatversion=2&format=json"] ]]
 
 ;Checkboxes to swtich on/off modules
 (define modules-panel (new horizontal-panel% [parent settings-panel]
@@ -244,6 +254,8 @@ You will see different options depending on whether you put the cursor on a word
   [set-tvar! "current-filename"  fname]
   [send editor-window set-label [get-tvar "current-filename"]]]
 
+[set-filename! ""]
+
 ;An image class that jumps the editor window to a new file when clicked.  Can be created with the filename and line number.
 (define image-jump-snip% [class image-snip%
                            [super-new]
@@ -266,9 +278,16 @@ You will see different options depending on whether you put the cursor on a word
                                                            [send left-text-editor scroll-to-position [second data]]
                                                          
                                                            [send left-text-editor set-position target]
+
+                                                           [send left-text-editor unhighlight-ranges/key 'delme]
+  [send left-text-editor unhighlight-ranges [lambda args #t]]
+
+                                                           
                                                            [send left-text-editor highlight-range
                                                                  target
-                                                                 [send left-text-editor find-newline  'forward  target [+ 100 [third data]]] "light blue"]
+                                                                 [send left-text-editor find-newline  'forward  target [+ 100 [third data]]]
+                                                                 "light blue"
+                                                                 #:key 'delme]
                                                            [send [send left-text-editor get-canvas] focus]
                                                            ]
                                                          ]]]
@@ -615,6 +634,8 @@ You will see different options depending on whether you put the cursor on a word
                       (set! last-file-name a-path)
                       [send left-text-editor insert file-source]]
                     [set-filename! a-path]
+                    [send left-text-editor unhighlight-ranges/key 'delme]
+                    [send left-text-editor unhighlight-ranges [lambda args #t]]
                     ]]
 
 [define [comment-callback editor commentary type event word]
@@ -631,7 +652,7 @@ You will see different options depending on whether you put the cursor on a word
   ;render it
   (call-with-exception-handler [lambda [x] x] [lambda [] 
                                                 [render-search-term word commentary editor]
-                                                [render-filename word commentary editor]
+                                                ;[render-filename word commentary editor]
                                                 [send commentary insert "\n\n"]
                                                 [when [get-tvar "search"]
                                                   [render-search word commentary editor 'backward]
@@ -643,7 +664,7 @@ You will see different options depending on whether you put the cursor on a word
                                                 [when [get-tvar "tags"]
                                                   [send commentary insert "--- ctags / csearch ---\n\n"]
                                                   [render-jump-to-file word commentary editor]]
-                                                render-search-finish
+                                                [render-search-finish word commentary editor]
                                                 [send commentary set-position 0]])
 
   ;show editor display
