@@ -18,11 +18,12 @@ To use commentary, you can use a binary release, or install the following:
 * gotags/ctags (https://github.com/jstemmer/gotags)
 * csearch (https://github.com/google/codesearch)
 
-The binaries for gotags and csearch must be placed in the same directory as Commentary.
+The binaries for gotags and csearch must be placed in the same directory as Commentary.  
 
-Start commentary with 
+Next run make.  You may have to run 'make' several times before all the dependencies are fully installed.
 
-    racket editor.rkt
+Start Commentary with 'run.sh' or 'make run' or 'racket commentary.rkt'
+
 
 ## Use
 
